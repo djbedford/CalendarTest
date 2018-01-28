@@ -1,14 +1,16 @@
 <?php namespace Calendar;
 
+use DateInterval;
 use DateTimeInterface;
 
 class Calendar implements CalendarInterface {
+    protected $date;
 
     /**
      * @param DateTimeInterface $datetime
      */
     public function __construct(DateTimeInterface $datetime) {
-        parent::__construct($datetime);
+        $this->date = $datetime;
     }
 
     /**
@@ -17,7 +19,7 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     public function getDay() {
-        // TODO: Implement getDay() method.
+        return intval($this->date->format('j'));
     }
 
     /**
@@ -26,7 +28,13 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     public function getWeekDay() {
-        // TODO: Implement getWeekDay() method.
+        $weekday = intval($this->date->format('w'));
+
+        if ($weekday === 0) {
+            $weekday = 7;
+        }
+
+        return $weekday;
     }
 
     /**
@@ -35,7 +43,13 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     public function getFirstWeekDay() {
-        // TODO: Implement getFirstWeekDay() method.
+        $firstWeekDay = intval($this->date->modify('first day of this month')->format('w'));
+
+        if ($firstWeekDay === 0) {
+            $firstWeekDay = 7;
+        }
+
+        return $firstWeekDay;
     }
 
     /**
@@ -44,7 +58,7 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     public function getFirstWeek() {
-        // TODO: Implement getFirstWeek() method.
+        return intval($this->date->modify('first day of this month')->format('W'));
     }
 
     /**
@@ -53,7 +67,7 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     public function getNumberOfDaysInThisMonth() {
-        // TODO: Implement getNumberOfDaysInThisMonth() method.
+        return intval($this->date->format('t'));
     }
 
     /**
@@ -62,7 +76,7 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     public function getNumberOfDaysInPreviousMonth() {
-        // TODO: Implement getNumberOfDaysInPreviousMonth() method.
+        return intval($this->date->modify('first day of previous month')->format('t'));
     }
 
     /**
