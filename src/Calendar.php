@@ -6,6 +6,8 @@ use DateTimeInterface;
 
 class Calendar implements CalendarInterface {
     protected $date;
+    const DAYS_IN_WEEK = 7;
+    const WEEKS_IN_LEAP_YEAR = 53;
 
     /**
      * @param DateTimeInterface $datetime
@@ -143,7 +145,7 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     private function increaseWeek($weekOfYear) {
-        return ($weekOfYear === 53) ? $weekOfYear = 1 : $weekOfYear += 1;
+        return ($weekOfYear === self::WEEKS_IN_LEAP_YEAR) ? $weekOfYear = 1 : $weekOfYear += 1;
     }
 
     private function buildWeek($weekOfYear) {
@@ -151,14 +153,14 @@ class Calendar implements CalendarInterface {
         $week = [];
         $year = $this->getYear();
 
-        if ($weekOfYear === 53 && $this->getMonth() === 1) {
+        if ($weekOfYear === self::WEEKS_IN_LEAP_YEAR && $this->getMonth() === 1) {
             $year--;
             $date->setISODate($year, $weekOfYear);
         } else {
             $date->setISODate($year, $weekOfYear);
         }
 
-        for ($i = 0; $i < 7; $i++) {
+        for ($i = 0; $i < self::DAYS_IN_WEEK; $i++) {
             $week[$date->format('j')] = $this->shouldBeHighlighted($weekOfYear);
 
             $date->modify('+1 day');
@@ -168,7 +170,7 @@ class Calendar implements CalendarInterface {
     }
 
     private function shouldBeHighlighted($weekOfYear) {
-        $previousWeek = $this->getWeek() - 1 <= 0 ? 53 : $this->getWeek() - 1;
+        $previousWeek = $this->getWeek() - 1 <= 0 ? self::WEEKS_IN_LEAP_YEAR : $this->getWeek() - 1;
 
         return ($previousWeek === $weekOfYear);
     }
