@@ -1,6 +1,7 @@
 <?php namespace Calendar;
 
 use DateInterval;
+use DateTime;
 use DateTimeInterface;
 
 class Calendar implements CalendarInterface {
@@ -19,7 +20,31 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     public function getDay() {
-        return intval($this->date->format('j'));
+        return (int) $this->date->format('j');
+    }
+
+    /**
+     * Get the week
+     * @return int
+     */
+    public function getWeek() {
+        return (int) $this->date->format('W');
+    }
+
+    /**
+     * Get the month
+     * @return int
+     */
+    public function getMonth() {
+        return (int) $this->date->format('m');
+    }
+
+    /**
+     * Get the year
+     * @return int
+     */
+    public function getYear() {
+        return (int) $this->date->format('Y');
     }
 
     /**
@@ -28,13 +53,9 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     public function getWeekDay() {
-        $weekday = intval($this->date->format('w'));
+        $weekday = (int) $this->date->format('w');
 
-        if ($weekday === 0) {
-            $weekday = 7;
-        }
-
-        return $weekday;
+        return ($weekday === 0) ? $weekday = 7 : $weekday;
     }
 
     /**
@@ -43,13 +64,10 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     public function getFirstWeekDay() {
-        $firstWeekDay = intval($this->date->modify('first day of this month')->format('w'));
+        $firstWeekDay = clone $this->date;
+        $firstWeekDay = (int) $firstWeekDay->modify('first day of this month')->format('w');
 
-        if ($firstWeekDay === 0) {
-            $firstWeekDay = 7;
-        }
-
-        return $firstWeekDay;
+        return ($firstWeekDay === 0) ? $firstWeekDay = 7 : $firstWeekDay;
     }
 
     /**
@@ -58,7 +76,22 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     public function getFirstWeek() {
-        return intval($this->date->modify('first day of this month')->format('W'));
+        $firstWeek = clone $this->date;
+        $firstWeek = (int) $firstWeek->modify('first day of this month')->format('W');
+
+        return $firstWeek;
+    }
+
+    /**
+     * Get the last week of this month (18th March => 9 because March starts on week 9)
+     *
+     * @return int
+     */
+    public function getLastWeek() {
+        $lastWeek = clone $this->date;
+        $lastWeek = (int) $lastWeek->modify('last day of this month')->format('W');
+
+        return $lastWeek;
     }
 
     /**
@@ -67,7 +100,7 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     public function getNumberOfDaysInThisMonth() {
-        return intval($this->date->format('t'));
+        return (int) $this->date->format('t');
     }
 
     /**
@@ -76,7 +109,12 @@ class Calendar implements CalendarInterface {
      * @return int
      */
     public function getNumberOfDaysInPreviousMonth() {
-        return intval($this->date->modify('first day of previous month')->format('t'));
+        $numberOfDaysInPreviousMonth = clone $this->date;
+        $numberOfDaysInPreviousMonth = (int) $numberOfDaysInPreviousMonth
+            ->modify('first day of previous month')
+            ->format('t');
+
+        return $numberOfDaysInPreviousMonth;
     }
 
     /**
@@ -85,6 +123,53 @@ class Calendar implements CalendarInterface {
      * @return array
      */
     public function getCalendar() {
-        // TODO: Implement getCalendar() method.
+        $calendarMonth = [];
+        $weekOfYear = $this->getFirstWeek();
+
+        for ($i = 0; $i < 6 ; $i++) {
+            $calendarMonth[$weekOfYear] = $this->buildWeek($weekOfYear);
+            $weekOfYear = $this->increaseWeek($weekOfYear);
+
+            if ($this->increaseWeek($this->getLastWeek()) === $weekOfYear) {
+                break;
+            }
+        }
+
+        return $calendarMonth;
+    }
+
+    /**
+     * @param $weekOfYear
+     * @return int
+     */
+    private function increaseWeek($weekOfYear) {
+        return ($weekOfYear === 53) ? $weekOfYear = 1 : $weekOfYear += 1;
+    }
+
+    private function buildWeek($weekOfYear) {
+        $date = new DateTime;
+        $week = [];
+        $year = $this->getYear();
+
+        if ($weekOfYear === 53 && $this->getMonth() === 1) {
+            $year--;
+            $date->setISODate($year, $weekOfYear);
+        } else {
+            $date->setISODate($year, $weekOfYear);
+        }
+
+        for ($i = 0; $i < 7; $i++) {
+            $week[$date->format('j')] = $this->shouldBeHighlighted($weekOfYear);
+
+            $date->modify('+1 day');
+        }
+
+        return $week;
+    }
+
+    private function shouldBeHighlighted($weekOfYear) {
+        $previousWeek = $this->getWeek() - 1 <= 0 ? 53 : $this->getWeek() - 1;
+
+        return ($previousWeek === $weekOfYear);
     }
 }
