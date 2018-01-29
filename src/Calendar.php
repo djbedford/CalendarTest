@@ -161,12 +161,7 @@ class Calendar implements CalendarInterface {
         $week = [];
         $year = $this->getYear();
 
-        if ($weekOfYear === self::WEEKS_IN_LEAP_YEAR && $this->getMonth() === 1) {
-            $year--;
-            $date->setISODate($year, $weekOfYear);
-        } else {
-            $date->setISODate($year, $weekOfYear);
-        }
+        $this->setDate($weekOfYear, $date, $year);
 
         for ($i = 0; $i < self::DAYS_IN_WEEK; $i++) {
             $week[$date->format('j')] = $this->shouldBeHighlighted($weekOfYear);
@@ -178,7 +173,7 @@ class Calendar implements CalendarInterface {
     }
 
     /**
-     * Highlight the current week
+     * Check if the current week should be highlighted
      *
      * @param $weekOfYear
      * @return bool
@@ -199,5 +194,20 @@ class Calendar implements CalendarInterface {
         $lastWeek = $this->getLastWeek();
 
         return ($firstWeek === self::WEEKS_IN_LEAP_YEAR) ? $lastWeek + 1 : $lastWeek - $firstWeek + 1;
+    }
+
+    /**
+     * Create new date, setting the week to begin on and factoring in leap years
+     *
+     * @param $weekOfYear
+     * @param $date
+     * @param $year
+     */
+    private function setDate($weekOfYear, $date, $year) {
+        if ($weekOfYear === self::WEEKS_IN_LEAP_YEAR && $this->getMonth() === 1) {
+            $date->setISODate(--$year, $weekOfYear);
+        } else {
+            $date->setISODate($year, $weekOfYear);
+        }
     }
 }
