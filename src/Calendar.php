@@ -1,13 +1,13 @@
 <?php namespace Calendar;
 
-use DateInterval;
 use DateTime;
 use DateTimeInterface;
 
 class Calendar implements CalendarInterface {
-    protected $date;
     const DAYS_IN_WEEK = 7;
     const WEEKS_IN_LEAP_YEAR = 53;
+
+    protected $date;
 
     /**
      * @param DateTimeInterface $datetime
@@ -27,6 +27,7 @@ class Calendar implements CalendarInterface {
 
     /**
      * Get the week
+     *
      * @return int
      */
     public function getWeek() {
@@ -35,6 +36,7 @@ class Calendar implements CalendarInterface {
 
     /**
      * Get the month
+     *
      * @return int
      */
     public function getMonth() {
@@ -43,6 +45,7 @@ class Calendar implements CalendarInterface {
 
     /**
      * Get the year
+     *
      * @return int
      */
     public function getYear() {
@@ -85,7 +88,7 @@ class Calendar implements CalendarInterface {
     }
 
     /**
-     * Get the last week of this month (18th March => 9 because March starts on week 9)
+     * Get the last week of this month
      *
      * @return int
      */
@@ -127,20 +130,19 @@ class Calendar implements CalendarInterface {
     public function getCalendar() {
         $calendarMonth = [];
         $weekOfYear = $this->getFirstWeek();
+        $weeksInMonth = $this->getNumberOfWeeksInThisMonth();
 
-        for ($i = 0; $i < 6 ; $i++) {
+        for ($i = 0; $i < $weeksInMonth ; $i++) {
             $calendarMonth[$weekOfYear] = $this->buildWeek($weekOfYear);
             $weekOfYear = $this->increaseWeek($weekOfYear);
-
-            if ($this->increaseWeek($this->getLastWeek()) === $weekOfYear) {
-                break;
-            }
         }
 
         return $calendarMonth;
     }
 
     /**
+     * Increment the week of the year
+     *
      * @param $weekOfYear
      * @return int
      */
@@ -148,6 +150,12 @@ class Calendar implements CalendarInterface {
         return ($weekOfYear === self::WEEKS_IN_LEAP_YEAR) ? $weekOfYear = 1 : $weekOfYear += 1;
     }
 
+    /**
+     * Build the current week
+     *
+     * @param $weekOfYear
+     * @return array
+     */
     private function buildWeek($weekOfYear) {
         $date = new DateTime;
         $week = [];
@@ -169,9 +177,27 @@ class Calendar implements CalendarInterface {
         return $week;
     }
 
+    /**
+     * Highlight the current week
+     *
+     * @param $weekOfYear
+     * @return bool
+     */
     private function shouldBeHighlighted($weekOfYear) {
         $previousWeek = $this->getWeek() - 1 <= 0 ? self::WEEKS_IN_LEAP_YEAR : $this->getWeek() - 1;
 
         return ($previousWeek === $weekOfYear);
+    }
+
+    /**
+     * Get the total number of weeks this month spans
+     *
+     * @return int
+     */
+    private function getNumberOfWeeksInThisMonth() {
+        $firstWeek = $this->getFirstWeek();
+        $lastWeek = $this->getLastWeek();
+
+        return ($firstWeek === self::WEEKS_IN_LEAP_YEAR) ? $lastWeek + 1 : $lastWeek - $firstWeek + 1;
     }
 }
